@@ -5,7 +5,7 @@ import authConfig from "./auth.config";
 import { db } from "./lib/db";
 import { getAccountByUserId, getUserById } from "@/features/auth/actions";
 
-export const { auth, handlers, signIn, signOut } = NextAuth({
+export const { auth, handlers, signIn, signOut } = NextAuth({  
   callbacks: {
     async signIn({ user, account, profile }) {
       if (!user || !account) return false;
@@ -24,6 +24,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
             image: user.image,
 
             accounts: {
+              //@ts-ignore
               create: {
                 type: account.type,
                 provider: account.provider,
@@ -66,6 +67,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
               token_type: account.token_type,
               scope: account.scope,
               id_token: account.id_token,
+              // @ts-ignore
               session_state: account.session_state,
             },
           });

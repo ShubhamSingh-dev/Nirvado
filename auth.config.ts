@@ -1,10 +1,9 @@
-import NextAuth from "next-auth";
 import Github from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 
-import type NextAuthConfig from "next-auth";
+import type { NextAuthConfig } from "next-auth";
 
-export default NextAuth({
+export default {
   providers: [
     Github({
       clientId: process.env.GITHUB_ID!,
@@ -15,4 +14,4 @@ export default NextAuth({
       clientSecret: process.env.GOOGLE_SECRET!,
     }),
   ],
-});
+} satisfies NextAuthConfig;

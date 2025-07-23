@@ -1,24 +1,28 @@
 import NextAuth from "next-auth";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { db } from "./lib/db";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+
 import authConfig from "./auth.config";
-import { getAccountByUserId, getUserById } from "./features/auth/actions";
+import { db } from "./lib/db";
+import { getAccountByUserId, getUserById } from "@/features/auth/actions";
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   callbacks: {
     async signIn({ user, account, profile }) {
       if (!user || !account) return false;
 
+      // Check if the user already exists
       const existingUser = await db.user.findUnique({
         where: { email: user.email! },
       });
 
+      // If user does not exist, create a new one
       if (!existingUser) {
         const newUser = await db.user.create({
           data: {
             email: user.email!,
             name: user.name,
             image: user.image,
+
             accounts: {
               create: {
                 type: account.type,
@@ -36,9 +40,10 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           },
         });
 
-        if (!newUser) return false;
+        if (!newUser) return false; // Return false if user creation fails
       } else {
-        const exisitingAccount = await db.account.findUnique({
+        // Link the account if user exists
+        const existingAccount = await db.account.findUnique({
           where: {
             provider_providerAccountId: {
               provider: account.provider,
@@ -47,7 +52,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           },
         });
 
-        if (!exisitingAccount) {
+        // If the account does not exist, create it
+        if (!existingAccount) {
           await db.account.create({
             data: {
               userId: existingUser.id,
@@ -71,35 +77,35 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
     async jwt({ token, user, account }) {
       if (!token.sub) return token;
+      const existingUser = await getUserById(token.sub);
 
-      const exisitingUser = await getUserById(token.sub);
-      if (!exisitingUser) return token;
+      if (!existingUser) return token;
 
-      const exisitingAccount = await getAccountByUserId(exisitingUser.id);
+      const exisitingAccount = await getAccountByUserId(existingUser.id);
 
-      token.name = exisitingUser.name;
-      token.email = exisitingUser.email;
-      token.role = exisitingUser.role;
+      token.name = existingUser.name;
+      token.email = existingUser.email;
+      token.role = existingUser.role;
 
       return token;
     },
 
     async session({ session, token }) {
-      if(token.sub && session.user) {
+      // Attach the user ID from the token to the session
+      if (token.sub && session.user) {
         session.user.id = token.sub;
       }
 
-      if(token.role && session.user) {
+      if (token.sub && session.user) {
         session.user.role = token.role;
       }
 
       return session;
-    }
+    },
   },
-  secret: process.env.NEXTAUTH_SECRET,
+
+  secret: process.env.AUTH_SECRET,
   adapter: PrismaAdapter(db),
-  session: {
-    strategy: "jwt",
-  },
+  session: { strategy: "jwt" },
   ...authConfig,
 });

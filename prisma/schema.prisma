@@ -13,16 +13,28 @@ enum UserRole {
   PREMIUM_USER
 }
 
-model User {
-  id        String    @id @default(cuid())
-  name      String?
-  email     String    @unique
-  image     String?
+enum Templates {
+  REACT
+  NEXTJS
+  EXPRESS
+  VUE
+  HONO
+  ANGULAR
+}
 
-  accounts  Account[]
-  role      UserRole  @default(USER)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+model User {
+  id               String       @id @default(cuid())
+  name             String?
+  email            String       @unique
+  image            String?
+  role             UserRole     @default(USER)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  myPlayground     Playground[]
+  staredPlayground StarMark[]
+
+  accounts         Account[]
 }
 
 model Account {
@@ -30,18 +42,44 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String?   
+  refresh_token     String?
   access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
   id_token          String?
   session_state     String?
- 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
- 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@id([provider, providerAccountId])
+}
+
+model Playground {
+  id          String      @id @default(cuid())
+  title       String
+  description String
+  template    Templates   @default(REACT)
+  userId      String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Starmark    StarMark[]
+}
+
+model StarMark {
+  id            String      @id @default(cuid())
+  userId        String
+  playgroundId  String
+  isMarked      Boolean
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  playground    Playground  @relation(fields: [playgroundId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, playgroundId])
 }

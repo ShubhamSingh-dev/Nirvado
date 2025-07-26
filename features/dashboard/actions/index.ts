@@ -8,8 +8,7 @@ import { revalidatePath } from "next/cache";
 export const createPlayground = async (data: {
   title: string;
   template: Templates;
-  description: string;
-  userId: string;
+  description?: string;
 }) => {
   const { title, template, description } = data;
   const user = await currentUser();
@@ -19,7 +18,7 @@ export const createPlayground = async (data: {
       data: {
         title,
         template,
-        description,
+        description: description || "",
         userId: user?.id!,
       },
     });
@@ -69,7 +68,10 @@ export const deleteProjectById = async (id: string) => {
   }
 };
 
-export const editProjectById = async (id: string, data: { title: string; description: string }) => {
+export const editProjectById = async (
+  id: string,
+  data: { title: string; description: string }
+) => {
   try {
     await db.playground.update({
       where: { id },
@@ -105,4 +107,4 @@ export const duplicateProjectById = async (id: string) => {
   } catch (error) {
     console.error("Error duplicating project:", error);
   }
-}
+};

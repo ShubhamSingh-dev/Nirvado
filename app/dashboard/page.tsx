@@ -1,3 +1,4 @@
+// app/dashboard/page.tsx
 import EmptyState from "@/components/ui/empty-state";
 import {
   deleteProjectById,
@@ -27,10 +28,10 @@ const Page = async () => {
             imageSrc="/empty-state.svg"
           />
         ) : (
-          // todo add playground state
+          // Corrected line: Pass data to the 'projects' prop
           <ProjectTable
             //@ts-ignore
-            data={playgrounds || []}
+            projects={playgrounds || []}
             onDeleteProject={deleteProjectById}
             onUpdateProject={editProjectById}
             onDuplicateProject={duplicateProjectById}

@@ -1,3 +1,4 @@
+// features/dashboard/components/ProjectTable.tsx
 "use client";
 
 import Image from "next/image";
@@ -66,7 +67,8 @@ interface EditProjectData {
   title: string;
   description: string;
 }
-async function ProjectTable({
+// Removed the 'async' keyword from the function declaration
+function ProjectTable({
   projects,
   onUpdateProject,
   onDeleteProject,

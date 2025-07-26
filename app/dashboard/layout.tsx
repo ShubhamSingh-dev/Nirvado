@@ -23,7 +23,7 @@ export default async function Dashboard({
     id: playground.id,
     name: playground.title,
     icon: technologyIconMap[playground.template],
-    starred: playground.Starmark[0].isMarked || false,
+    starred: playground?.Starmark[0]?.isMarked || false,
   })) || [];
 
   return (

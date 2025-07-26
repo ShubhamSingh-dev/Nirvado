@@ -1,8 +1,14 @@
 import EmptyState from "@/components/ui/empty-state";
-import { getAllPlaygroundForUser } from "@/features/dashboard/actions";
+import {
+  deleteProjectById,
+  duplicateProjectById,
+  editProjectById,
+  getAllPlaygroundForUser,
+} from "@/features/dashboard/actions";
 import AddNewButton from "@/features/dashboard/components/AddNewButton";
 import AddRepoButton from "@/features/dashboard/components/AddRepoButton";
 import ProjectTable from "@/features/dashboard/components/ProjectTable";
+import { on } from "events";
 import React from "react";
 
 const Page = async () => {
@@ -23,10 +29,11 @@ const Page = async () => {
         ) : (
           // todo add playground state
           <ProjectTable
+            //@ts-ignore
             data={playgrounds || []}
-            onDeleteProject={() => {}}
-            onUpdateProject={() => {}}
-            onDuplicateProject={() => {}}
+            onDeleteProject={deleteProjectById}
+            onUpdateProject={editProjectById}
+            onDuplicateProject={duplicateProjectById}
           />
         )}
       </div>

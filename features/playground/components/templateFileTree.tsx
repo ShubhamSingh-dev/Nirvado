@@ -120,9 +120,8 @@ const TemplateFileTree = ({
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>{title}</SidebarGroupLabel>
-
           <DropdownMenu>
-            <DropdownMenuTrigger>
+            <DropdownMenuTrigger asChild>
               <SidebarGroupAction>
                 <Plus className="h-4 w-4" />
               </SidebarGroupAction>
@@ -138,7 +137,6 @@ const TemplateFileTree = ({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
           <SidebarGroupContent>
             <SidebarMenu>
               {isRootFolder ? (
@@ -177,6 +175,19 @@ const TemplateFileTree = ({
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarRail />
+
+      {/* <NewFileDialog
+        isOpen={isNewFileDialogOpen}
+        onClose={() => setIsNewFileDialogOpen(false)}
+        onCreateFile={handleCreateFile}
+      />
+
+      <NewFolderDialog
+        isOpen={isNewFolderDialogOpen}
+        onClose={() => setIsNewFolderDialogOpen(false)}
+        onCreateFolder={handleCreateFolder}
+      /> */}
     </Sidebar>
   );
 };

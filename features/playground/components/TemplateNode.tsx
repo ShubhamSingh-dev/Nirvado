@@ -145,12 +145,9 @@ const TemplateNode = ({
               <Button
                 variant="ghost"
                 size="icon"
-                asChild
                 className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
               >
-                <span>
-                  <MoreHorizontal className="h-3 w-3" />
-                </span>
+                <MoreHorizontal className="h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -197,12 +194,9 @@ const TemplateNode = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  asChild
                   className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
-                  <span>
-                    <MoreHorizontal className="h-3 w-3" />
-                  </span>
+                  <MoreHorizontal className="h-3 w-3" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">

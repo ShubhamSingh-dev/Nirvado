@@ -85,7 +85,7 @@ const TemplateFileTree = ({
   onRenameFile,
   onRenameFolder,
 }: TemplateFileTreeProps) => {
-  const isRootFolder = data && typeof data === "object" && "foldername" in data;
+  const isRootFolder = data && typeof data === "object" && "folderName" in data;
   const [isNewFileDialogOpen, setIsNewFileDialogOpen] = React.useState(false);
   const [isNewFolderDialogOpen, setIsNewFolderDialogOpen] =
     React.useState(false);
@@ -99,7 +99,7 @@ const TemplateFileTree = ({
   };
   return (
     <Sidebar>
-      <SidebarContent>
+      <SidebarContent className="overflow-x-auto">
         <SidebarGroup>
           <SidebarGroupLabel>{title}</SidebarGroupLabel>
           <DropdownMenu>

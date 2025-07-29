@@ -147,14 +147,16 @@ const TemplateNode = ({
             className="flex-1"
           >
             <File className="h-4 w-4 mr-2 shrink-0" />
-            <span>{fileName}</span>
+            <span className="whitespace-nowrap overflow-hidden">
+              {fileName}
+            </span>
           </SidebarMenuButton>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
               >
                 <MoreHorizontal className="h-3 w-3" />
               </Button>
@@ -272,10 +274,12 @@ const TemplateNode = ({
         >
           <div className="flex items-center group ">
             <CollapsibleTrigger asChild>
-              <SidebarMenuButton className="flex-1">
+              <SidebarMenuButton className="flex-1 min-w-0">
                 <ChevronRight className="transition-transform" />
                 <Folder className="h-4 w-4 mr-2 shrink-0" />
-                <span>{folderName}</span>
+                <span className="whitespace-nowrap overflow-hidden">
+                  {folderName}
+                </span>
               </SidebarMenuButton>
             </CollapsibleTrigger>
             <DropdownMenu>
@@ -312,7 +316,6 @@ const TemplateNode = ({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            r
           </div>
 
           <CollapsibleContent>

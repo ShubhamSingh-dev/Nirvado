@@ -146,7 +146,6 @@ const TemplateNode = ({
             onClick={() => onFileSelect?.(file)}
             className="flex-1"
           >
-            {" "}
             <File className="h-4 w-4 mr-2 shrink-0" />
             <span>{fileName}</span>
           </SidebarMenuButton>

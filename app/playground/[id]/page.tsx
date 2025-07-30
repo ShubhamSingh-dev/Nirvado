@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { act, useEffect, useRef } from "react";
 import { useState, useCallback } from "react";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
@@ -47,7 +47,6 @@ import {
 } from "@/components/ui/resizable";
 // import WebContainerPreview from "@/features/webcontainers/components/webcontainer-preveiw";
 // import LoadingStep from "@/components/ui/loader";
-// import { PlaygroundEditor } from "@/features/playground/components/playground-editor";
 // import ToggleAI from "@/features/playground/components/toggle-ai";
 import { useFileExplorer } from "@/features/playground/hooks/useFileExplorer";
 import { usePlayground } from "@/features/playground/hooks/usePlayground";
@@ -55,6 +54,7 @@ import { usePlayground } from "@/features/playground/hooks/usePlayground";
 // import { useWebContainer } from "@/features/webcontainers/hooks/useWebContainer";
 import { SaveUpdatedCode } from "@/features/playground/actions";
 import { TemplateFolder } from "@/features/playground/types";
+import PlaygroundEditor from "@/features/playground/components/PlaygroundEditor";
 // import { findFilePath } from "@/features/playground/libs";
 const Page = () => {
   const { id } = useParams<{ id: string }>();
@@ -86,6 +86,16 @@ const Page = () => {
     setPlaygroundId,
     setOpenFiles,
   } = useFileExplorer();
+
+  useEffect(() => {
+    setPlaygroundId(id);
+  }, [id, setPlaygroundId]);
+
+  useEffect(() => {
+    if (templateData && !openFiles.length) {
+      setTemplateData(templateData);
+    }
+  }, [templateData, setTemplateData, openFile.length]);
 
   const [isPreviewVisible, setIsPreviewVisible] = useState(true);
 
@@ -205,7 +215,7 @@ const Page = () => {
                                 {file.filename}.{file.fileExtension}
                               </span>
                               {file.hasUnsavedChanges && (
-                                <span className="h-2 w-2 rounded-full bg-orange-500" />
+                                <span className="h-2 w-2 rounded-full bg-white" />
                               )}
                               <span
                                 className="ml-2 h-4 w-4 hover:bg-destructive hover:text-destructive-foreground rounded-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
@@ -220,8 +230,35 @@ const Page = () => {
                           </TabsTrigger>
                         ))}
                       </TabsList>
+                      {openFiles.length > 1 && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={closeAllFiles}
+                          className="h-6 px-2 text-xs"
+                        >
+                          Close All
+                        </Button>
+                      )}
                     </div>
                   </Tabs>
+                </div>
+                <div className="flex-1">
+                  <ResizablePanelGroup
+                    direction="horizontal"
+                    className="h-full"
+                  >
+                    <ResizablePanel defaultSize={isPreviewVisible ? 50 : 100}>
+                      <PlaygroundEditor
+                        activeFile={activeFile}
+                        content={activeFile?.content || ""}
+                        onContentChange={(value) => {
+                          activeFileId &&
+                            updateFileContent(activeFileId || "", value);
+                        }}
+                      />
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
                 </div>
               </div>
             ) : (

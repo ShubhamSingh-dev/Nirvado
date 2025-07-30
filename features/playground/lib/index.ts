@@ -2,9 +2,12 @@ import { TemplateFile, TemplateFolder } from "../types";
 
 export function findFilePath(
   file: TemplateFile,
-  folder: TemplateFolder,
+  folder: TemplateFolder | null,
   pathSoFar: string[] = []
 ): string | null {
+   if (!folder || !folder.items) {
+    return null; 
+  }
   for (const item of folder.items) {
     if ("folderName" in item) {
       const res = findFilePath(file, item, [...pathSoFar, item.folderName]);

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { act, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { useState, useCallback } from "react";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
@@ -45,16 +45,17 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-// import WebContainerPreview from "@/features/webcontainers/components/webcontainer-preveiw";
 // import LoadingStep from "@/components/ui/loader";
 // import ToggleAI from "@/features/playground/components/toggle-ai";
 import { useFileExplorer } from "@/features/playground/hooks/useFileExplorer";
 import { usePlayground } from "@/features/playground/hooks/usePlayground";
 // import { useAISuggestions } from "@/features/playground/hooks/useAISuggestion";
-// import { useWebContainer } from "@/features/webcontainers/hooks/useWebContainer";
 import { SaveUpdatedCode } from "@/features/playground/actions";
 import { TemplateFolder } from "@/features/playground/types";
 import PlaygroundEditor from "@/features/playground/components/PlaygroundEditor";
+import { useWebContainer } from "@/features/webContainers/hooks/useWebContainer";
+import WebContainerPreview from "@/features/webContainers/components/WebContainerPreview";
+import LoadingStep from "@/components/ui/Loader";
 // import { findFilePath } from "@/features/playground/libs";
 const Page = () => {
   const { id } = useParams<{ id: string }>();
@@ -87,6 +88,16 @@ const Page = () => {
     setOpenFiles,
   } = useFileExplorer();
 
+  const {
+    serverUrl,
+    isLoading: containerLoading,
+    error: containerError,
+    instance,
+    writeFileSync,
+    destroy,
+    //@ts-ignore
+  } = useWebContainer({ templateData });
+
   useEffect(() => {
     setPlaygroundId(id);
   }, [id, setPlaygroundId]);
@@ -105,6 +116,47 @@ const Page = () => {
   const handleFileSelect = (file: TemplateFile) => {
     openFile(file);
   };
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)] p-4">
+        <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
+        <h2 className="text-xl font-semibold text-red-600 mb-2">
+          Something went wrong
+        </h2>
+        <p className="text-gray-600 mb-4">{error}</p>
+        <Button onClick={() => window.location.reload()} variant="destructive">
+          Try Again
+        </Button>
+      </div>
+    );
+  }
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)] p-4">
+        <div className="w-full max-w-md p-6 rounded-lg shadow-sm border">
+          <h2 className="text-xl font-semibold mb-6 text-center">
+            Loading Playground
+          </h2>
+          <div className="mb-8">
+            <LoadingStep
+              currentStep={1}
+              step={1}
+              label="Loading playground data"
+            />
+            <LoadingStep
+              currentStep={2}
+              step={2}
+              label="Setting up environment"
+            />
+            <LoadingStep currentStep={3} step={3} label="Ready to code" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <TooltipProvider>
@@ -258,6 +310,23 @@ const Page = () => {
                         }}
                       />
                     </ResizablePanel>
+
+                    {isPreviewVisible && (
+                      <>
+                        <ResizableHandle />
+                        <ResizablePanel defaultSize={50}>
+                          <WebContainerPreview
+                            templateData={templateData!}
+                            instance={instance}
+                            writeFileSync={writeFileSync}
+                            isLoading={containerLoading}
+                            error={containerError}
+                            serverUrl={serverUrl!}
+                            forceResetUp={false}
+                          />
+                        </ResizablePanel>
+                      </>
+                    )}
                   </ResizablePanelGroup>
                 </div>
               </div>

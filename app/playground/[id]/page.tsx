@@ -57,6 +57,8 @@ import { useWebContainer } from "@/features/webContainers/hooks/useWebContainer"
 import WebContainerPreview from "@/features/webContainers/components/WebContainerPreview";
 import LoadingStep from "@/components/ui/Loader";
 import { findFilePath } from "@/features/playground/lib";
+import ToggleAi from "@/features/playground/components/ToggleAi";
+import { useAISuggestions } from "@/features/ai/hooks/useAiSuggestion";
 // import { findFilePath } from "@/features/playground/libs";
 const Page = () => {
   const { id } = useParams<{ id: string }>();
@@ -68,6 +70,8 @@ const Page = () => {
     loadPlayground,
     saveTemplateData,
   } = usePlayground(id);
+
+  const aiSuggestion = useAISuggestions();
 
   const {
     activeFileId,
@@ -125,7 +129,7 @@ const Page = () => {
     [handleAddFile, writeFileSync, instance, saveTemplateData]
   );
 
-   const wrappedHandleAddFolder = useCallback(
+  const wrappedHandleAddFolder = useCallback(
     (newFolder: TemplateFolder, parentPath: string) => {
       return handleAddFolder(newFolder, parentPath, instance, saveTemplateData);
     },
@@ -412,6 +416,11 @@ const Page = () => {
                   <TooltipContent>Save All (Ctrl+Shift+S)</TooltipContent>
                 </Tooltip>
                 {/* Toggle AI */}
+                <ToggleAi
+                  isEnabled={true}
+                  onToggle={() => {}}
+                  suggestionLoading={false}
+                />
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button

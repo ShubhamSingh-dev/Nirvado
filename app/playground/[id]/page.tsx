@@ -71,7 +71,7 @@ const Page = () => {
     saveTemplateData,
   } = usePlayground(id);
 
-  const aiSuggestion = useAISuggestions();
+  const aiSuggestions = useAISuggestions();
 
   const {
     activeFileId,
@@ -417,9 +417,9 @@ const Page = () => {
                 </Tooltip>
                 {/* Toggle AI */}
                 <ToggleAi
-                  isEnabled={true}
-                  onToggle={() => {}}
-                  suggestionLoading={false}
+                  isEnabled={aiSuggestions.isEnabled}
+                  onToggle={aiSuggestions.toggleEnabled}
+                  suggestionLoading={aiSuggestions.isLoading}
                 />
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -520,6 +520,18 @@ const Page = () => {
                           activeFileId &&
                             updateFileContent(activeFileId || "", value);
                         }}
+                        suggestion={aiSuggestions.suggestion}
+                        suggestionLoading={aiSuggestions.isLoading}
+                        suggestionPosition={aiSuggestions.position}
+                        onAcceptSuggestion={(editor, monaco) =>
+                          aiSuggestions.acceptSuggestion(editor, monaco)
+                        }
+                        onRejectSuggestion={(editor) =>
+                          aiSuggestions.rejectSuggestion(editor)
+                        }
+                        onTriggerSuggestion={(type, editor) =>
+                          aiSuggestions.fetchSuggestion(type, editor)
+                        }
                       />
                     </ResizablePanel>
 

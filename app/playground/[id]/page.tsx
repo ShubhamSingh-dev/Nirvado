@@ -45,21 +45,17 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-// import LoadingStep from "@/components/ui/loader";
-// import ToggleAI from "@/features/playground/components/toggle-ai";
 import { useFileExplorer } from "@/features/playground/hooks/useFileExplorer";
 import { usePlayground } from "@/features/playground/hooks/usePlayground";
-// import { useAISuggestions } from "@/features/playground/hooks/useAISuggestion";
 import { SaveUpdatedCode } from "@/features/playground/actions";
 import { TemplateFolder } from "@/features/playground/types";
-import PlaygroundEditor from "@/features/playground/components/PlaygroundEditor";
+import { PlaygroundEditor } from "@/features/playground/components/PlaygroundEditor";
 import { useWebContainer } from "@/features/webContainers/hooks/useWebContainer";
 import WebContainerPreview from "@/features/webContainers/components/WebContainerPreview";
 import LoadingStep from "@/components/ui/Loader";
 import { findFilePath } from "@/features/playground/lib";
 import ToggleAi from "@/features/playground/components/ToggleAi";
 import { useAISuggestions } from "@/features/ai/hooks/useAiSuggestion";
-// import { findFilePath } from "@/features/playground/libs";
 const Page = () => {
   const { id } = useParams<{ id: string }>();
   const {

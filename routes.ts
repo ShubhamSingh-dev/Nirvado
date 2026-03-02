@@ -33,3 +33,10 @@ export const authRoutes: string[] = [
 export const apiAuthPrefix: string = "/api/auth";
 
 export const DEFAULT_LOGIN_REDIRECT = "/"; // Changed to redirect to home page after login
+
+// /**
+//  * An Array of public API routes that should bypass authentication
+//  * These routes return JSON and must NOT be redirected to the sign-in page
+//  * @type {string[]}
+//  */
+// export const publicApiRoutes = ["/api/chat", "/api/code-suggestion"];

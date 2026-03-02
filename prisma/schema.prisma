@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
 }
 
 datasource db {
@@ -23,18 +24,18 @@ enum Templates {
 }
 
 model User {
-  id               String       @id @default(cuid())
-  name             String?
-  email            String       @unique
-  image            String?
-  role             UserRole     @default(USER)
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  image     String?
+  role      UserRole @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   myPlayground     Playground[]
   staredPlayground StarMark[]
 
-  accounts         Account[]
+  accounts Account[]
 }
 
 model Account {
@@ -49,48 +50,48 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([provider, providerAccountId])
 }
 
 model Playground {
-  id          String      @id @default(cuid())
-  title       String
-  description String?
-  template    Templates   @default(REACT)
+  id            String         @id @default(cuid())
+  title         String
+  description   String?
+  template      Templates      @default(REACT)
   templateFiles TemplateFile[]
-  userId      String
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  userId        String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Starmark    StarMark[]
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Starmark StarMark[]
 }
 
 model TemplateFile {
-  id          String      @id @default(cuid())
-  content     Json
-  playgroundId String     @unique
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id           String   @id @default(cuid())
+  content      Json
+  playgroundId String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  playground  Playground  @relation(fields: [playgroundId], references: [id], onDelete: Cascade)
+  playground Playground @relation(fields: [playgroundId], references: [id], onDelete: Cascade)
 }
 
 model StarMark {
-  id            String      @id @default(cuid())
-  userId        String
-  playgroundId  String
-  isMarked      Boolean
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id           String   @id @default(cuid())
+  userId       String
+  playgroundId String
+  isMarked     Boolean
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  playground    Playground  @relation(fields: [playgroundId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  playground Playground @relation(fields: [playgroundId], references: [id], onDelete: Cascade)
 
   @@unique([userId, playgroundId])
 }

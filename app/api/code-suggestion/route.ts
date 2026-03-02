@@ -21,6 +21,70 @@ interface CodeContext {
   incompletePatterns: string[];
 }
 
+const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
+// Using the versatile model here for better code suggestions quality
+// You can switch to "llama-3.1-8b-instant" if you want faster but lighter suggestions
+const GROQ_MODEL = "llama-3.3-70b-versatile";
+
+async function callGroq(
+  systemPrompt: string,
+  userPrompt: string,
+  options: { temperature?: number; max_tokens?: number } = {}
+): Promise<string> {
+  const apiKey = process.env.GROQ_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("GROQ_API_KEY is not set in environment variables");
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+  try {
+    const response = await fetch(GROQ_API_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        temperature: options.temperature ?? 0.2, // Low temperature = more deterministic code
+        max_tokens: options.max_tokens ?? 300,
+        top_p: 0.9,
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Groq API error:", errorText);
+      throw new Error(`Groq API error: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+
+    if (!content) {
+      throw new Error("No content in Groq response");
+    }
+
+    return content.trim();
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if ((error as Error).name === "AbortError") {
+      throw new Error("Request timeout: Groq took too long to respond");
+    }
+    throw error;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body: CodeSuggestionRequest = await request.json();
@@ -44,23 +108,24 @@ export async function POST(request: NextRequest) {
     );
 
     // Build AI prompt
-    const prompt = buildPrompt(context, suggestionType);
+    const { systemPrompt, userPrompt } = buildPrompt(context, suggestionType);
 
-    // Call AI service (replace with your AI service)
-    const suggestion = await generateSuggestion(prompt);
+    // Call Groq
+    const rawSuggestion = await generateSuggestion(systemPrompt, userPrompt);
 
     return NextResponse.json({
-      suggestion,
+      suggestion: rawSuggestion,
       context,
       metadata: {
         language: context.language,
         framework: context.framework,
         position: context.cursorPosition,
+        model: GROQ_MODEL,
         generatedAt: new Date().toISOString(),
       },
     });
   } catch (error: any) {
-    console.error("Context analysis error:", error);
+    console.error("Code suggestion error:", error);
     return NextResponse.json(
       { error: "Internal server error", message: error.message },
       { status: 500 }
@@ -113,81 +178,73 @@ function analyzeCodeContext(
 }
 
 /**
- * Build AI prompt based on context
+ * Build system + user prompts separately for better Groq results
  */
-function buildPrompt(context: CodeContext, suggestionType: string): string {
-  return `You are an expert code completion assistant. Generate a ${suggestionType} suggestion.
+function buildPrompt(
+  context: CodeContext,
+  suggestionType: string
+): { systemPrompt: string; userPrompt: string } {
+  const systemPrompt = `You are an expert code completion engine for a code editor.
+
+Rules you must follow:
+- Output ONLY the raw code to be inserted at the cursor — nothing else
+- No explanations, no markdown, no code fences, no comments unless part of the suggestion
+- Maintain the existing indentation style
+- Follow ${context.language} best practices
+- Keep suggestions concise and focused`;
+
+  const userPrompt = `Generate a ${suggestionType} code completion for the cursor position marked as |CURSOR|.
 
 Language: ${context.language}
 Framework: ${context.framework}
+In Function: ${context.isInFunction}
+In Class: ${context.isInClass}
+After Comment: ${context.isAfterComment}
+Incomplete Patterns: ${context.incompletePatterns.join(", ") || "None"}
 
-Context:
+Code context:
+\`\`\`${context.language.toLowerCase()}
 ${context.beforeContext}
-${context.currentLine.substring(
-  0,
-  context.cursorPosition.column
-)}|CURSOR|${context.currentLine.substring(context.cursorPosition.column)}
+${context.currentLine.substring(0, context.cursorPosition.column)}|CURSOR|${context.currentLine.substring(context.cursorPosition.column)}
 ${context.afterContext}
+\`\`\`
 
-Analysis:
-- In Function: ${context.isInFunction}
-- In Class: ${context.isInClass}
-- After Comment: ${context.isAfterComment}
-- Incomplete Patterns: ${context.incompletePatterns.join(", ") || "None"}
+Output only the code to insert at |CURSOR|. No explanation.`;
 
-Instructions:
-1. Provide only the code that should be inserted at the cursor
-2. Maintain proper indentation and style
-3. Follow ${context.language} best practices
-4. Make the suggestion contextually appropriate
-
-Generate suggestion:`;
+  return { systemPrompt, userPrompt };
 }
 
 /**
- * Generate suggestion using AI service
+ * Generate suggestion using Groq and clean up the response
  */
-async function generateSuggestion(prompt: string): Promise<string> {
+async function generateSuggestion(
+  systemPrompt: string,
+  userPrompt: string
+): Promise<string> {
   try {
-    // Replace this with your actual AI service call
-    const response = await fetch("http://localhost:11434/api/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "codellama:latest",
-        prompt,
-        stream: false,
-        options: {
-          temperature: 0.7,
-          max_tokens: 300,
-        },
-      }),
+    let suggestion = await callGroq(systemPrompt, userPrompt, {
+      temperature: 0.2, // Low = more predictable code completions
+      max_tokens: 300,
     });
 
-    if (!response.ok) {
-      throw new Error(`AI service error: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    let suggestion = data.response;
-
-    // Clean up the suggestion
+    // Strip any code fences the model might still include
     if (suggestion.includes("```")) {
       const codeMatch = suggestion.match(/```[\w]*\n?([\s\S]*?)```/);
       suggestion = codeMatch ? codeMatch[1].trim() : suggestion;
     }
 
-    // Remove cursor markers if present
+    // Remove any leftover cursor markers
     suggestion = suggestion.replace(/\|CURSOR\|/g, "").trim();
 
     return suggestion;
   } catch (error) {
     console.error("AI generation error:", error);
-    return "// AI suggestion unavailable";
+    return ""; // Return empty string so editor stays clean rather than showing error comment
   }
 }
 
-// Helper functions for code analysis
+// ─── Helper functions for code analysis (unchanged) ──────────────────────────
+
 function detectLanguage(content: string, fileName?: string): string {
   if (fileName) {
     const ext = fileName.split(".").pop()?.toLowerCase();
@@ -205,7 +262,6 @@ function detectLanguage(content: string, fileName?: string): string {
     if (ext && extMap[ext]) return extMap[ext];
   }
 
-  // Content-based detection
   if (content.includes("interface ") || content.includes(": string"))
     return "TypeScript";
   if (content.includes("def ") || content.includes("import ")) return "Python";
@@ -264,12 +320,4 @@ function detectIncompletePatterns(line: string, column: number): string[] {
   if (/\.\s*$/.test(beforeCursor)) patterns.push("method-call");
 
   return patterns;
-}
-
-function getLastNonEmptyLine(lines: string[], currentLine: number): string {
-  for (let i = currentLine - 1; i >= 0; i--) {
-    const line = lines[i];
-    if (line.trim() !== "") return line;
-  }
-  return "";
 }

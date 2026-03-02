@@ -1146,25 +1146,34 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
                           remarkPlugins={[remarkGfm, remarkMath]}
                           rehypePlugins={[rehypeKatex]}
                           components={{
-                            code: ({
-                              children,
-                              className,
-                              inline: _inline,
-                            }) => (
-                              <EnhancedCodeBlock
-                                className={className}
-                                inline={_inline as boolean}
-                                onInsert={
-                                  onInsertCode
-                                    ? (code) => handleInsertCode(code)
-                                    : undefined
-                                }
-                                onRun={onRunCode}
-                                theme={theme}
-                              >
-                                {String(children)}
-                              </EnhancedCodeBlock>
-                            ),
+                            pre: ({ children }) => <>{children}</>,
+                            code: ({ children, className }) => {
+                              // If there's a language class, it's a fenced code block (block-level)
+                              const isBlock = /language-\w+/.test(className || "");
+                              if (isBlock) {
+                                return (
+                                  <EnhancedCodeBlock
+                                    className={className}
+                                    inline={false}
+                                    onInsert={
+                                      onInsertCode
+                                        ? (code) => handleInsertCode(code)
+                                        : undefined
+                                    }
+                                    onRun={onRunCode}
+                                    theme={theme}
+                                  >
+                                    {String(children).replace(/\n$/, "")}
+                                  </EnhancedCodeBlock>
+                                );
+                              }
+                              // Inline code
+                              return (
+                                <code className="bg-zinc-800/60 text-zinc-200 px-1.5 py-0.5 rounded text-sm font-mono border border-zinc-700/50">
+                                  {children}
+                                </code>
+                              );
+                            },
                           }}
                         >
                           {msg.content}
@@ -1387,6 +1396,7 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
             ref={fileInputRef}
             type="file"
             multiple
+            aria-label="Attach code files"
             accept=".js,.jsx,.ts,.tsx,.py,.java,.cpp,.c,.html,.css,.json,.md,.txt,.sql,.sh,.php,.rb,.go,.rs,.swift,.kt,.dart,.r,.scala,.clj,.hs,.elm,.vue,.svelte"
             className="hidden"
             onChange={(e) => {

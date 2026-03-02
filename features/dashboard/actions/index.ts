@@ -2,7 +2,7 @@
 
 import { currentUser } from "@/features/auth/actions";
 import { db } from "@/lib/db";
-import { Templates } from "@prisma/client";
+import { Templates } from "@/generated/prisma/client";
 import { revalidatePath } from "next/cache";
 
 export const createPlayground = async (data: {

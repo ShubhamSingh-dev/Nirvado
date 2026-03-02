@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <div className="z-20 flex flex-col items-center justify-start min-h-screen py-2 mt-10">
       <div className="flex flex-col items-center justify-center my-5">
-        <Image src={"/hero.svg"} alt="Hero Section" height={400} width={400} />
+        <Image src={"/Hero.svg"} alt="Hero Section" height={400} width={400} />
         <h1 className="z-20 text-center mt-5 text-4xl sm:text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 leading-[1.3] tracking-tight">
           Vibe Code with Intelligence
         </h1>
